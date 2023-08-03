@@ -10,7 +10,7 @@
 <div class="card">
   <div class="card-img">
     <img class="card-img" src="{{ url_for('send_file', filename=book.cover) }}" alt="{{ book.cover }}">
-    <span><h4>{{ book.genre }}</h4></span>
+    <span><h4>{{ book.ganre }}</h4></span>
     <div class="overlay">
       <div class="overlay-content">
         <a href="#">Подробнее</a>
@@ -19,7 +19,7 @@
   </div>
   <div class="card-content">
       <h2>{{ book.title }}</h2>
-      <h2>{% set stars = book.rating | int %}
+      <h2>{% set stars = book.ratting | int %}
           {% for n in range(stars) %}
           <span class="fa fa-star checked" style="color:orange"></span>
           {% endfor %}

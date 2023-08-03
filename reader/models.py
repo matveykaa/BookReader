@@ -11,7 +11,7 @@ class Book(db.Model):
     cover = db.Column(db.String(50), nullable=False, default='default.jpg')
     description = db.Column(db.TEXT)
     notes = db.Column(db.TEXT)
-    createde_at = db.Column(db.DATETIME(timezone=True), server_default=func.now())
+    createde_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
         return f'<Book {self.title}>'
