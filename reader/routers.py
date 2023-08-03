@@ -66,8 +66,8 @@ def create():
         notes = form.notes.data
         book = Book(title=title,
                     author=author,
-                    genre=ganre,
-                    rating=ratting,
+                    ganre=ganre,
+                    ratting=ratting,
                     cover=cover,
                     description=description,
                     notes=notes)
@@ -76,7 +76,7 @@ def create():
         return redirect(url_for('index'))
     return render_template('create.html', form=form)
 
-@app.route('/<int:book_id>/edit/', methods=('GET', 'PUT'))
+@app.route('/<int:book_id>/edit/', methods=('GET', 'POST'))
 def edit(book_id):
     book = Book.query.get_or_404(book_id)
     form = UpdateBook()
@@ -87,8 +87,8 @@ def edit(book_id):
             cover = book.cover
         book.title = form.title.data
         book.author = form.author.data
-        book.genre = form.ganre.data
-        book.rating = int(form.ratting.data)
+        book.ganre = form.ganre.data
+        book.ratting = int(form.ratting.data)
         book.description = form.description.data
         book.notes = form.notes.data
         try:
@@ -101,8 +101,8 @@ def edit(book_id):
     elif request.method == 'GET':
         form.title.data = book.title
         form.author.data = book.author
-        form.ganre.data = book.genre
-        form.ratting.data = book.rating
+        form.ganre.data = book.ganre
+        form.ratting.data = book.ratting
         form.cover.data = book.cover
         form.description.data = book.description
         form.notes.data = book.notes
