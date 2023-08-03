@@ -1,8 +1,13 @@
-from flask import render_template, send_from_directory, request
+import os.path
+import secrets
 
-from reader import app
+from flask import render_template, send_from_directory, request, redirect, url_for, flash, jsonify
+from PIL import Image
+from reader import app, db
 from reader.models import Book
+from reader.forms import BookForm, UpdateBook
 
+from sqlalchemy.exc import IntegrityError
 
 @app.route('/')
 def index():
@@ -33,3 +38,85 @@ def best():
 
 
 
+def save_picture(cover):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(cover.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], picture_fn)
+    output_size = (200, 340)
+    i = Image.open(cover)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+    return picture_fn
+
+
+@app.route('/create/', methods=('GET', 'POST'))
+def create():
+    form = BookForm()
+    if form.validate_on_submit():
+        if form.cover.data:
+            cover = save_picture(form.cover.data)
+        else:
+            cover = 'default.jpg'
+        title = form.title.data
+        author = form.author.data
+        ganre = form.ganre.data
+        ratting = int(form.ratting.data)
+        description = form.description.data
+        notes = form.notes.data
+        book = Book(title=title,
+                    author=author,
+                    genre=ganre,
+                    rating=ratting,
+                    cover=cover,
+                    description=description,
+                    notes=notes)
+        db.session.add(book)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('create.html', form=form)
+
+@app.route('/<int:book_id>/edit/', methods=('GET', 'PUT'))
+def edit(book_id):
+    book = Book.query.get_or_404(book_id)
+    form = UpdateBook()
+    if form.validate_on_submit():
+        if form.cover.data:
+            cover = save_picture(form.cover.data)
+        else:
+            cover = book.cover
+        book.title = form.title.data
+        book.author = form.author.data
+        book.genre = form.ganre.data
+        book.rating = int(form.ratting.data)
+        book.description = form.description.data
+        book.notes = form.notes.data
+        try:
+            db.session.commit()
+            return redirect(url_for('index'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('Произошла ошибка: такая книга уже есть в базе', 'error')
+            return render_template('edit.html', form=form)
+    elif request.method == 'GET':
+        form.title.data = book.title
+        form.author.data = book.author
+        form.ganre.data = book.genre
+        form.ratting.data = book.rating
+        form.cover.data = book.cover
+        form.description.data = book.description
+        form.notes.data = book.notes
+
+    return render_template('edit.html', form=form)
+
+@app.post('/<int:book_id>/delete/')
+def delete(book_id):
+    book = Book.query.get_or_404(book_id)
+    db.session.delete(book)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/export/')
+def data():
+    data = Book.query.all()
+    return jsonify(data)
