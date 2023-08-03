@@ -89,6 +89,7 @@ def edit(book_id):
         book.author = form.author.data
         book.ganre = form.ganre.data
         book.ratting = int(form.ratting.data)
+        book.cover = cover
         book.description = form.description.data
         book.notes = form.notes.data
         try:
